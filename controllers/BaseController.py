@@ -159,7 +159,7 @@ class BC:
             field_info = {
                 "type": field_type,
                 "required": field.required,
-                "default": field.default,
+                "default": field.default if not callable(field.default) else None,
                 "references": None
             }
 
