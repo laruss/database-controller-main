@@ -14,35 +14,35 @@ This Python project is designed for local development with the possibility of co
 
 1. Clone this repository:
     
-    ```bash
+```bash
     git clone https://github.com/laruss/databaseControllerBack.git
-    ```
+```
    
 2. Navigate to the project directory:
         
-        ```bash
-        cd databaseControllerBack
-        ```
+```bash
+       cd databaseControllerBack
+```
+
 3. Install the dependencies:
     
-    ```bash
+```bash
     pip install -r requirements.txt
-    ```
+```
    
-4. Create a `.env` file in the root directory and add the following variables:
+4. Copy the `.env.sample` file to `.env` and update the values:
     
-    ```bash
-    MONGODB_HOST=localhost
-    MONGODB_PORT=27017
-    MONGODB_DB=database_name
-    MONGODB_USERNAME=username
-    MONGODB_PASSWORD=password
-    ```
+```bash
+   DB="sample"
+   DB_HOST="localhost"
+   DB_PORT=27017
+   DB_ALIAS="default"
+```
    
 5. Run the project:
     
-    ```bash
+```bash
     python main.py
-    ```
+```
    
 6. Access the RESTful API endpoints via the browser, Postman, or other tools.
