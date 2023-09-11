@@ -1,18 +1,19 @@
-import flask
 from flask import Blueprint
 
-from controllers.ModelsController import ModelsController
-from routes.users import users
+from backend.controllers.models_controller import ModelsController
+from backend.helpers.utils import success_response
+from backend.routes.users import users
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
+# Register all routes
 for rules in [users]:
     [api_bp.add_url_rule(**rule) for rule in rules['url_rules']]
 
 
 @api_bp.route('/', methods=['GET'])
 def index():
-    return flask.jsonify({'success': True, 'data': 'ping'})
+    return success_response(message='API is working')
 
 
 @api_bp.route('/models', methods=['GET'])

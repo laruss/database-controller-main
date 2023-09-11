@@ -1,5 +1,5 @@
-from controllers.BaseController import BC
-from routes.BaseRoutes import get_routes_models_dict
+from backend.controllers.base_controller import BC
+from backend.routes.base_routes import get_routes_models_dict
 
 
 class ModelsController(BC):

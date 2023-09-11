@@ -2,17 +2,20 @@ from typing import Type
 
 from flask import request
 from flask.views import MethodView
-from mongoengine import Document
 
-from controllers.BaseController import BC
-from helpers.constants import ROUTES_FILE
-from helpers.path import Path
-from helpers.utils import open_json, save_json
+from pydantic_mongo import PydanticMongoModel as PmModel
+
+import config
+from backend.controllers.base_controller import BC
+from backend.helpers.constants import ROUTES_FILE
+from backend.helpers.utils import open_json, save_json
+
+filepath = config.routes_path / ROUTES_FILE
 
 
 class BaseRoute(MethodView):
-    _url = ''
-    _name = ''
+    _url: str = ''
+    _name: str = ''
     _controller: BC = BC()
 
     @classmethod
@@ -53,14 +56,13 @@ class BRItem(BaseRoute):
         raise NotImplementedError
 
 
-class BRScheme(BaseRoute):
+class BRSchema(BaseRoute):
     def get(self):
-        return self._controller.get_scheme()
+        return self._controller.get_schema()
 
 
-def _save_name_model_name_to_json(name: str, model: Document):
-    """ method saves name and model name to json file if doesn't exist """
-    filepath = f'{Path().routes_root}{ROUTES_FILE}'
+def _save_model_name_to_json(name: str, model: PmModel):
+    """ method saves name and model name to json file if it doesn't exist """
     data = open_json(filepath)
     if name not in data.keys():
         data[name] = model.__name__
@@ -68,16 +70,15 @@ def _save_name_model_name_to_json(name: str, model: Document):
 
 
 def get_routes_models_dict() -> dict:
-    """ method returns dict with routes names and models names """
-    filepath = f'{Path().routes_root}{ROUTES_FILE}'
+    """ method returns dict with routes names and model names """
     return open_json(filepath)
 
 
-def get_route(name: str, *Routes: Type[BaseRoute], save=True):
+def register_routes(name: str, *Routes: Type[BaseRoute], save=True):
     if not Routes:
         raise ValueError('Routes must be not empty')
     if save:
-        _save_name_model_name_to_json(name, Routes[0]._controller.model)
+        _save_model_name_to_json(name, Routes[0]._controller.model)
     return {
         'name': name,
         'url_rules': [Route.get_rule() for Route in Routes]
