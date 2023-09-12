@@ -2,12 +2,12 @@ import functools
 from typing import Optional, List
 
 import flask
-from pydantic_mongo import PydanticMongoModel as PmModel
 from pydantic_mongo.extensions import ValidationError
 
 import config
 from backend.helpers.constants import ROUTES_FILE
 from backend.helpers.utils import open_json, response, not_found_response
+from backend.models.base import BaseAppModel
 
 
 def get_routes_models_dict() -> dict:
@@ -17,9 +17,9 @@ def get_routes_models_dict() -> dict:
 
 
 class BC:
-    model = PmModel
+    model = BaseAppModel
 
-    def _get_by_id(self, _id: str) -> PmModel:
+    def _get_by_id(self, _id: str) -> BaseAppModel:
         instance = self.model.get_by_id(_id)
         if not instance:
             raise KeyError(f"Can't find {self.model.__name__} with id {_id}")
@@ -54,12 +54,19 @@ class BC:
         return self.response({"success": True}, status=204)
 
     @staticmethod
-    def _check_has_references(instance: PmModel) -> Optional[List[Optional[PmModel]]]:
+    def _check_has_references(instance: BaseAppModel) -> Optional[List[Optional[BaseAppModel]]]:
         return instance.get_ref_objects()
 
     @_handle_errors
     def get_all(self, **filters):
-        return self.response(list(self.model.objects(filter=filters)))
+        fields_to_get = BaseAppModel.model_fields.keys()
+        result = []
+
+        for instance in self.model.objects(**filters):
+            dump = instance.model_dump()
+            result.append({field: dump[field] for field in fields_to_get})
+
+        return self.response(result)
 
     @_handle_errors
     def get_one_by_id(self, _id: str):

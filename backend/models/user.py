@@ -1,6 +1,5 @@
-from pydantic_mongo import PydanticMongoModel
+from backend.models.base import BaseAppModel
 
 
-class User(PydanticMongoModel):
-    name: str
+class User(BaseAppModel):
     username: str
