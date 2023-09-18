@@ -1,13 +1,16 @@
 from flask import Blueprint
 
+""" this line is needed to register all routes DO NOT REMOVE """
+from backend.routes.api import *
+
 from backend.controllers.db_app.db_app_controllers import ItemFieldsController, ModelsController
 from backend.helpers.utils import success_response
-from backend.routes.users import users
+from backend.routes.utils import REGISTERED_ROUTES
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # Register all routes
-for rules in [users]:
+for rules in REGISTERED_ROUTES:
     [api_bp.add_url_rule(**rule) for rule in rules['url_rules']]
 
 

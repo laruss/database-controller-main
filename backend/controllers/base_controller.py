@@ -32,11 +32,14 @@ class BC:
         def wrapper_error_handler(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
+            except ValidationError as e:
+                return BC.response({"error": f"{e}"}, status=400)
+            except KeyError as e:
+                return BC.response404(f"{e}")
+            except IndexError as e:
+                return BC.response404(f"{e}")
             except Exception as e:
-                if isinstance(e, IndexError) or isinstance(e, KeyError):
-                    return BC.response404(f"{e}")
-                else:
-                    raise e
+                return BC.response({"error": f"{e}"}, status=500)
 
         return wrapper_error_handler
 
@@ -69,12 +72,21 @@ class BC:
         return self.response(result)
 
     @_handle_errors
-    def get_one_by_id(self, _id: str):
-        return self.response(self._get_by_id(_id).model_dump())
+    def get_one_by_id(self, _id: str, simplified: bool = False):
+        result = self._get_by_id(_id)
+        result = result.model_dump(True)
+        result = self._get_simplified(result) if simplified else result
+
+        return self.response(result)
+
+    @staticmethod
+    def _get_simplified(dump: dict) -> dict:
+        fields_to_get = BaseAppModel.model_fields.keys()
+        return {field: dump[field] for field in fields_to_get}
 
     @_handle_errors
     def create_one(self, data: dict):
-        instance = self.model(**data).save()
+        instance = self.model.get_with_parse_db_refs(data).save()
 
         return self.response(instance.model_dump(), 201)
 
@@ -83,21 +95,22 @@ class BC:
         instance = self._get_by_id(_id)
         result = instance.get_ref_objects()
         if result:
-            raise ValidationError(
-                f"Can't delete {self.model.__class__.__name__} with id {_id} because it has references "
-                f"('{result[1]}' with id '{result[0]}')"
-            )
+            for inst in result:
+                if inst.id:
+                    raise ValidationError(
+                        f"Can't delete {self.model.__class__.__name__} with id {_id} because it has references "
+                        f"('{instance.__class__.__name__}' with id '{instance.id}')"
+                    )
 
         instance.delete()
-
         return self.response204()
 
     @_handle_errors
     def update_one_by_id(self, _id: str, data: dict):
-        instance = self._get_by_id(_id)
-
-        full_data = {**instance.model_dump(), **data}
-        self.model(**full_data).save()
+        data.pop('id', None)
+        instance = self.model.get_with_parse_db_refs(data)
+        instance.id = _id
+        instance.save()
 
         return self.response204()
 
@@ -107,4 +120,8 @@ class BC:
         return self.response204()
 
     def get_schema(self):
-        return self.response(self.model.model_json_schema(True))
+        schema = self.model.model_json_schema(True)
+        schema['title'] = self.model.__name__
+        required: list = schema.get('required', [])
+        schema['required'] = [field for field in required if field != 'id']
+        return self.response(schema)

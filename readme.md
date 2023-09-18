@@ -6,7 +6,12 @@ It provides an easy way to manage MongoDB models and create RESTful endpoints us
 [pydantic-mongo](https://github.com/laruss/pydantic-mongo), and a base controller.
 The project also utilizes a `.env` file for database configuration and includes a `main.py` file as the entry point.
 
-### Version: 1.1.1
+### Version: 1.1.2
+
+## Changes:
+
+- some changes in the structure of the project
+- some fixes
 
 ## Features
 

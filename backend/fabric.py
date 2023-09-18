@@ -4,7 +4,7 @@ from flask_cors import CORS
 from backend.extensions import mongo
 from backend.helpers.errorhandlers import register_errorhandlers
 from backend.helpers.statichandlers import register_statichandlers
-from backend.routes.api import api_bp
+from backend.routes.main_api import api_bp
 
 
 def create_app(config):

@@ -1,5 +1,5 @@
 from backend.controllers.db_app.base_db_app import BaseDbAppController
-from backend.routes.base_routes import get_routes_models_dict
+from backend.routes.api.base_routes import get_routes_models_dict
 
 
 """
